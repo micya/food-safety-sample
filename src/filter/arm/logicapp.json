@@ -2,45 +2,20 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "eventgrid_topic_resource_id": {
-      "type": "string",
-      "metadata": {
-        "description": "Event Grid topic resource id"
-      }
+    "azureeventgrid_1_Connection_Name": {
+      "type": "string"
     },
-    "azureeventgrid_Connection_Name": {
-      "type": "string",
-      "defaultValue": "azureeventgrid",
-      "metadata": {
-        "description": "The resource name to use for the Event Grid connection"
-      }
+    "azureeventgrid_1_Connection_DisplayName": {
+      "type": "string"
     },
-    "azureeventgrid_Connection_DisplayName": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "The display name to use for the Event Grid connection"
-      }
+    "office365_1_Connection_Name": {
+      "type": "string"
     },
-    "office365_Connection_Name": {
-      "type": "string",
-      "defaultValue": "office365",
-      "metadata": {
-        "description": "The resource name to use for the Office 365 Outlook connection"
-      }
+    "office365_1_Connection_DisplayName": {
+      "type": "string"
     },
-    "office365_Connection_DisplayName": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "The display name to use for the Office 365 Outlook connection"
-      }
-    },
-    "office365_email_to": {
-      "type": "string",
-      "metadata": {
-        "description": "Notification email recipients"
-      }
+    "resourceGroup": {
+      "type": "string"
     },
     "LogicAppLocation": {
       "type": "string",
@@ -79,12 +54,11 @@
         "southafricanorth",
         "southafricawest"
       ],
-      "defaultValue": "[resourceGroup().location]"
+      "defaultValue": "eastus"
     },
     "LogicAppName": {
       "type": "string",
-      "minLength": 1,
-      "defaultValue": "filter-logicapp"
+      "minLength": 1
     }
   },
   "variables": {},
@@ -114,7 +88,7 @@
                         "endpointUrl": "@{listCallbackUrl()}"
                       }
                     },
-                    "topic": "[parameters('eventgrid_topic_resource_id')]"
+                    "topic": "[concat('/subscriptions/', subscription().id, '/resourceGroups/', 'foodsafetyt20', '/providers/Microsoft.EventGrid/topics/', 'foodsafetyt20')]"
                   }
                 },
                 "host": {
@@ -122,7 +96,7 @@
                     "name": "@parameters('$connections')['azureeventgrid']['connectionId']"
                   }
                 },
-                "path": "/subscriptions/@{encodeURIComponent(variables('eventgrid_subscription'))}/providers/@{encodeURIComponent('Microsoft.EventGrid.Topics')}/resource/eventSubscriptions",
+                "path": "/subscriptions/@{encodeURIComponent('2e467bcc-ec84-4430-a27f-beac4ec94251')}/providers/@{encodeURIComponent('Microsoft.EventGrid.Topics')}/resource/eventSubscriptions",
                 "queries": {
                   "x-ms-api-version": "2017-09-15-preview"
                 }
@@ -144,7 +118,7 @@
                             "body": {
                               "Body": "<p>State name: @{items('For_each')?['ParameterName']}<br>\nNew value: @{items('For_each')?['ParameterValue']}</p>",
                               "Subject": "State changed",
-                              "To": "[parameters('office365_email_to')]"
+                              "To": "bobjac@microsoft.com"
                             },
                             "host": {
                               "connection": {
@@ -305,21 +279,20 @@
               }
             }
           },
-          "outputs": {
-          }
+          "outputs": {}
         },
         "parameters": {
           "$connections": {
             "value": {
               "azureeventgrid": {
-                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('LogicAppLocation'), '/managedApis/', 'azureeventgrid')]",
-                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('azureeventgrid_Connection_Name'))]",
-                "connectionName": "[parameters('azureeventgrid_Connection_Name')]"
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', 'eastus', '/managedApis/', 'azureeventgrid')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('azureeventgrid_1_Connection_Name'))]",
+                "connectionName": "[parameters('azureeventgrid_1_Connection_Name')]"
               },
               "office365": {
-                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('LogicAppLocation'), '/managedApis/', 'office365')]",
-                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('office365_Connection_Name'))]",
-                "connectionName": "[parameters('office365_Connection_Name')]"
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', 'eastus', '/managedApis/', 'office365')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('office365_1_Connection_Name'))]",
+                "connectionName": "[parameters('office365_1_Connection_Name')]"
               }
             }
           }
@@ -333,35 +306,34 @@
       },
       "apiVersion": "2016-06-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/connections', parameters('azureeventgrid_Connection_Name'))]",
-        "[resourceId('Microsoft.Web/connections', parameters('office365_Connection_Name'))]"
+        "[resourceId('Microsoft.Web/connections', parameters('azureeventgrid_1_Connection_Name'))]",
+        "[resourceId('Microsoft.Web/connections', parameters('office365_1_Connection_Name'))]"
       ]
     },
     {
       "type": "MICROSOFT.WEB/CONNECTIONS",
       "apiVersion": "2018-07-01-preview",
-      "name": "[parameters('azureeventgrid_Connection_Name')]",
-      "location": "[parameters('LogicAppLocation')]",
+      "name": "[parameters('azureeventgrid_1_Connection_Name')]",
+      "location": "eastus",
       "properties": {
         "api": {
-          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('LogicAppLocation'), '/managedApis/', 'azureeventgrid')]"
+          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', 'eastus', '/managedApis/', 'azureeventgrid')]"
         },
-        "displayName": "[parameters('azureeventgrid_Connection_DisplayName')]"
+        "displayName": "[parameters('azureeventgrid_1_Connection_DisplayName')]"
       }
     },
     {
       "type": "MICROSOFT.WEB/CONNECTIONS",
       "apiVersion": "2018-07-01-preview",
-      "name": "[parameters('office365_Connection_Name')]",
-      "location": "[parameters('LogicAppLocation')]",
+      "name": "[parameters('office365_1_Connection_Name')]",
+      "location": "eastus",
       "properties": {
         "api": {
-          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('LogicAppLocation'), '/managedApis/', 'office365')]"
+          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', 'eastus', '/managedApis/', 'office365')]"
         },
-        "displayName": "[parameters('office365_Connection_DisplayName')]"
+        "displayName": "[parameters('office365_1_Connection_DisplayName')]"
       }
     }
   ],
-  "outputs": {
-  }
+  "outputs": {}
 }
