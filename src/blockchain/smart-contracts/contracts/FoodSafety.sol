@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.16;
 
 contract FoodSafety
 {
@@ -30,14 +30,12 @@ contract FoodSafety
 
         emit StateChanged('Request');
     }
-
     function SetRecord(string memory sensorId, int256 temperature, int256 humidity, string memory timestamp) public returns (bool) {
         Record memory r;
         r.sensorId = sensorId;
         r.temperature = temperature;
         r.humidity = humidity;
         r.timestamp = timestamp;
-        
         if (isValid(r)) {
             records.push(r);
             numRecords++;
@@ -47,43 +45,34 @@ contract FoodSafety
             return (false);
         }
     }
-    function isValid(Record memory r) private returns (bool) {
-        bool isValid = true;
-        int256 minTemp = -50;
-        int256 maxTemp = 50;
+    function isValid(Record memory r) private pure returns (bool) {
+        int256 minTemp = -30;
+        int256 maxTemp = 32;
         int minHumidity = -50;
-        int maxHumidity = 50;
-        
+        int maxHumidity = 99;
         if (r.temperature < minTemp || r.temperature > maxTemp) {
-            isValid = false;
+            return false;
         }
-        
         if (r.humidity < minHumidity || r.humidity > maxHumidity) {
-            isValid = false;
+            return false;
         }
-        
-        return isValid;
+        return true;
     }
-
     function setInvalid(Record memory r) private {
         State = StateType.NonCompliant;
         emit StateChanged("HORRIBLE!!!!!!");
     }
-    
-    function GetRecordCount() public returns (uint) {
+    function GetRecordCount() public view  returns (uint) {
         return numRecords;
     }
-    
-    function GetRecordByIndex(uint index) public returns (string memory, int256, int256, string memory) {
+    function GetRecordByIndex(uint index) public view returns (string memory, int256, int256, string memory) {
         if (index > numRecords) {
-            // throw an error
+            revert("Error - the index exceeds the number of records");
         }
-        
         Record memory r = records[index];
         return (r.sensorId, r.temperature, r.humidity, r.timestamp);
     }
-
-    function GetContractState() public returns (StateType) {
+    function GetContractState() public view returns (StateType) {
         return State;
     }
 }
